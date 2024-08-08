@@ -1,17 +1,15 @@
 .idea
-
 __pycache__
-
 *.db
 log.txt
 .lock
 env3.*
 env
-
 venv
 *.zip
 *.sqlite
 
+*.autosave
 # vim temporary files
 *~
 .*.sw?
