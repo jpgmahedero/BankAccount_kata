@@ -1,0 +1,21 @@
+.idea
+
+__pycache__
+
+*.db
+log.txt
+.lock
+env3.*
+env
+
+venv
+*.zip
+*.sqlite
+
+# vim temporary files
+*~
+.*.sw?
+.cache
+
+# macOS
+.DS_Store
