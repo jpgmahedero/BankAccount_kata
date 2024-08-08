@@ -1,0 +1,46 @@
+-- TODO ALL
+define UML model
+define Pydantic data schemas
+
+define endpoints
+    -  status:
+        - account
+    - withdraw:
+        - account
+        - amount
+        - errors:
+            - no balance
+            - account does not exist
+
+    - deposit:
+        - account
+        - amount
+        - errors:
+            - account does not exist
+
+    - transfer:
+        - src
+        - dst
+        - amount
+        - errors:
+            - no balance
+            - src account does not exist
+            - dst account does not exist
+
+
+errores
+    - withddraw
+
+    - desposit
+        - account does not exist
+    - transfer
+        - src account does not exist
+        - dst account does not exist
+        - dst account is not IBAN compliant
+    - uknown trastaction type
+
+------------------------------------------
+------------------------------------------
+
+-- DONE
+
