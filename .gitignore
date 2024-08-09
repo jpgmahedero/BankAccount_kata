@@ -8,7 +8,7 @@ env
 venv
 *.zip
 *.sqlite
-
+bak
 *.autosave
 # vim temporary files
 *~

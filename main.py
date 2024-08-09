@@ -1,7 +1,9 @@
 from fastapi import FastAPI
 
 import models
-from models import init_db,get_db
+from db import get_db
+from utils import populate_db
+
 app = FastAPI()
 
 @app.on_event('startup')
@@ -11,7 +13,7 @@ async def startup():
     :return:
     """
     print('startup')
-    await init_db()
+    await populate_db()
     db = await get_db()
     print(db)
 
