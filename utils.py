@@ -1,9 +1,11 @@
 from fastapi import HTTPException
 
-from db import db
+from db import initialize_db,get_db
 
 
-async def populate_db():
+
+async def populate_db(db):
+
     """
     Add some fake accounts empty, non-empty, IBAN compliant, and non-compliant.
     """
@@ -44,9 +46,10 @@ async def populate_db():
     db['accounts'].append(account2_empty_IBAN_no)
     db['accounts'].append(account2_filled_IBAN_no)
 
+    return db
 
-
-def check_account_exists(account_number, db):
+async def check_account_exists(account_number):
+    db = await get_db()
     if not any([acc['number'] == account_number for acc in db['accounts']]):
         raise HTTPException(status_code=404, detail="Account does not exist")
 
