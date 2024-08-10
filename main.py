@@ -10,7 +10,7 @@ from db import  log_transaction
 
 
 from db import initialize_db, get_db, db_deposit
-from utils import populate_db,check_account_exists,get_account
+from utils import populate_db,check_account_exists,get_account, check_amount_is_positive
 
 from schemas import DepositRequest, DepositResponse
 
@@ -55,6 +55,8 @@ async def check_account(account_number):
 
 @app.post("/deposit", response_model=DepositResponse)
 async def deposit(request: DepositRequest):
+    check_account_exists(request.account)
+    check_amount_is_positive(request.amount)
 
     # call the db
     account =  db_deposit(request)

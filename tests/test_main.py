@@ -17,12 +17,20 @@ def test_index( client):
 
 
 def test_account_does_not_exists( client):
-
     response = client.get("/check_account/ACCOUNT_DOES_NOT_EXISTS")
 
     assert response.status_code == 404
     assert response.json() == {"detail": "Account does not exist"}
 
+def test_amount_deposit_is_positive( client):
+    # 'DE000000000000000000000' is an existing account in your db with an initial balance of 0
+    response = client.post("/deposit", json={"account": "DE000000000000000000000", "amount": -50.0})
+
+    print('oooooooooooooooooooooooooooo')
+    print(response.status_code)
+    print(response.json())
+    assert response.status_code == 400
+    assert response.json() == {"detail":"Invalid amount. Amount cannot be negative"}
 
 def test_deposit_success(client):
 
@@ -31,8 +39,20 @@ def test_deposit_success(client):
     assert response.status_code == 200
     assert response.json() == {"account": "DE000000000000000000000", "new_balance": 50.0}
 
-    # 'DE000000000000000000000' has noww a balance of 50.0 let's add 22.0
+    # 'DE000000000000000000000' has now a balance of 50.0 let's add 22.0
     response = client.post("/deposit", json={"account": "DE000000000000000000000", "amount": 22.0})
+    assert response.status_code == 200
+    assert response.json() == {"account": "DE000000000000000000000", "new_balance": 72.0}
+
+
+def test_withdraw_success(client):
+
+    assert False
+    # 'DE000000000000000000000' is an existing account in your db with an initial balance of 0
+    client.post("/deposit", json={"account": "DE000000000000000000000", "amount": 50.0})
+
+    # 'DE000000000000000000000' has noww a balance of 50.0 let's add 22.0
+    response = client.post("/withdraw", json={"account": "DE000000000000000000000", "amount": 100.0})
     assert response.status_code == 200
     assert response.json() == {"account": "DE000000000000000000000", "new_balance": 72.0}
 
@@ -44,13 +64,11 @@ def test_transaction_creation():
         amount=66.6,
         type="deposit",
         timestamp=datetime.utcnow(),
-
     )
 
     assert transaction.id == 27
     assert transaction.src_account == "DE000000000000000000000"
     assert transaction.dest_account == None
-
     assert transaction.amount == 66.6
     assert transaction.type == "deposit"
     assert isinstance(transaction.timestamp, datetime)
@@ -61,7 +79,6 @@ def test_perform_deposit_creates_transaction(client):
 
 
     # Verify that the transaction was recorded in the database
-    print('lllllllllllllllllllllllllll')
     db  =   client.get("/status_all").json()['message']
 
     transactions = db['transactions']

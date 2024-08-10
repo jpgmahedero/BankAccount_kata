@@ -4,8 +4,8 @@ from pydantic import BaseModel, Field, field_validator
 from itertools import count
 
 class DepositRequest(BaseModel):
-    account: str = Field(..., json_schema_extra={"example": "A1"})
-    amount: float = Field(..., gt=0, json_schema_extra={"example": 50.0})
+    account: str = Field(..., json_schema_extra={"example": "DE000000000000000000000"})
+    amount: float = Field(...,  json_schema_extra={"example": 50.0})
 
 class DepositResponse(BaseModel):
     account: str
@@ -18,7 +18,7 @@ class Transaction(BaseModel):
     id: int = Field(default_factory=lambda: next(transaction_id_counter), example=1)
     src_account: str = Field(..., example="A1")
     type: Literal["deposit", "withdraw", "transfer"] = Field(..., example="deposit")
-    amount: float = Field(..., gt=0, example=100.0)
+    amount: float = Field(..., example=100.0)
     dest_account: Optional[str] = Field(None, example="B1")  # Nullable, relevant only for transfers
     timestamp: datetime = Field(default_factory=datetime.utcnow, example="2024-01-01T12:00:00Z")
 

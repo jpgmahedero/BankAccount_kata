@@ -54,6 +54,12 @@ def check_account_exists(account_number):
         raise HTTPException(status_code=404, detail="Account does not exist")
 
 
+def check_amount_is_positive(amount):
+
+    if amount < 0:
+        raise HTTPException(status_code=400, detail="Invalid amount. Amount cannot be negative")
+
+
 def get_account(account_number: str):
     db = get_db()
     check_account_exists(account_number)
