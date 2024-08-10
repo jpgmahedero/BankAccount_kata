@@ -1,6 +1,20 @@
+-- DOING
+DEPOSIT TRANSACTION
+
+    - define pydantic schemas
+    - tests
+        - test_desposit
+    - deposit:
+        - params:
+            - account
+            - amount
+        - errors:
+            - account does not exist
+
+
+
 -- TODO ALL
-define UML model
-define Pydantic data schemas
+
 
 define endpoints
     -  status:
@@ -12,11 +26,6 @@ define endpoints
             - no balance
             - account does not exist
 
-    - deposit:
-        - account
-        - amount
-        - errors:
-            - account does not exist
 
     - transfer:
         - src
@@ -43,4 +52,8 @@ errores
 ------------------------------------------
 
 -- DONE
+define UML model
+
+ - tests
+        - account does not exist
 
