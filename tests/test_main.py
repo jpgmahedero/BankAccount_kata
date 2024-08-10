@@ -1,12 +1,8 @@
 # tests/test_main.py
 
-import pytest
-
-from main import  app
-from fastapi.testclient import TestClient
-from schemas import  Transaction
 from datetime import datetime
-from db import get_db,initialize_db
+
+from schemas import Transaction
 
 
 def test_index( client):
@@ -23,7 +19,7 @@ def test_account_does_not_exists( client):
     assert response.json() == {"detail": "Account does not exist"}
 
 def test_amount_deposit_is_positive( client):
-    # 'DE000000000000000000000' is an existing account in your db with an initial balance of 0
+    # 'DE000000000000000000000' is an existing account in  db with an initial balance of 0
     response = client.post("/deposit", json={"account": "DE000000000000000000000", "amount": -50.0})
 
     assert response.status_code == 400
@@ -63,6 +59,59 @@ def test_withdraw_invalid_amounts(client):
     assert response.json() == {"detail": "Invalid amount. Not enough balance available"}
 
 
+
+def test_transfer_invalid_between_not_IBAN_accounts(client):
+    # Given: account with 0 balance
+    # 'DE000000000000000000000' is an existing account in  db with an initial balance of 0
+
+    # When: try to widthdraw
+    response = client.post("/withdraw", json={"account": "DE000000000000000000000", "amount": 1000.0})
+
+    # Then:
+    assert response.status_code == 400
+    assert response.json() == {"detail": "Invalid amount. Not enough balance available"}
+
+    # Given:  account with positive balance
+    # 'DE00000000000000000150' is an existing account in  db with an initial balance of 150
+
+    # When: try to widthdraw more amount than balance
+    response = client.post("/withdraw", json={"account": "DE00000000000000000150", "amount": 10000.0})
+
+    # Then:
+    assert response.status_code == 400
+    assert response.json() == {"detail": "Invalid amount. Not enough balance available"}
+
+
+def test_transfer_with_non_IBAN_accounts(client):
+    # Example call to the transfer endpoint
+    response = client.post("/transfer", json={
+        "src_account":  "DE00000000000000000150",
+        "dest_account": "NO_IBAN_Number_A4",
+        "amount": 1.0
+    })
+    assert response.json() == {"detail": "Transfer between non IBAN accounts is not permitted"}
+    assert response.status_code == 400
+
+
+def test_transfer_with_success(client):
+    # Example call to the transfer endpoint
+    response = client.post("/transfer", json={
+        "src_account":  "ES000000000000000000100",
+        "dest_account": "ES000000000000000000000",
+        "amount": 75.0
+    })
+
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "src_account": "ES000000000000000000100",
+        "src_new_balance": 25.0,
+
+        "dest_account": "ES000000000000000000000",
+        "dest_new_balance": 75.0
+    }
+
+
 def test_withdraw_success(client):
 
 
@@ -100,7 +149,6 @@ def test_perform_deposit_creates_transaction(client):
 
     transactions = db['transactions']
 
-    print(transactions)
     assert len(transactions) > 0
     transaction = transactions[-1]  # Get the last transaction
 
