@@ -9,7 +9,7 @@ from fastapi import HTTPException
 
 
 
-from db import initialize_db, get_db
+from db import initialize_db, get_db, db_deposit
 from utils import populate_db,check_account_exists,get_account
 
 from schemas import DepositRequest, DepositResponse
@@ -54,12 +54,8 @@ async def check_account(account_number):
 @app.post("/deposit", response_model=DepositResponse)
 async def deposit(request: DepositRequest, db: Dict = Depends(get_db)):
 
-    # Check if the account exists
-    account = next((acc for acc in db["accounts"] if acc["number"] == request.account), None)
-    if not account:
-        raise HTTPException(status_code=404, detail="Account does not exist")
+    # call the db
+    account = await db_deposit(request)
 
-    # Update the balance
-    account["balance"] += request.amount
 
     return DepositResponse(account=request.account, new_balance=account["balance"])
