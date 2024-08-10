@@ -3,8 +3,7 @@ DEPOSIT TRANSACTION
 
     - define pydantic schemas
     - tests
-        - account does not exist
-        -test_desposit
+        - test_desposit
     - deposit:
         - params:
             - account
@@ -54,4 +53,7 @@ errores
 
 -- DONE
 define UML model
+
+ - tests
+        - account does not exist
 

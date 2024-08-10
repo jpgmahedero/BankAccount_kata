@@ -4,9 +4,15 @@ from fastapi import FastAPI
 from contextlib import asynccontextmanager
 
 from fastapi.params import Depends
+from typing import Dict
+from fastapi import HTTPException
+
+
 
 from db import initialize_db, get_db
-from utils import populate_db,check_account_exists
+from utils import populate_db,check_account_exists,get_account
+
+from schemas import DepositRequest, DepositResponse
 
 
 @asynccontextmanager
@@ -27,21 +33,33 @@ app = FastAPI(lifespan=lifespan)
 
 
 @app.get("/")
-async def index( db: dict = Depends(get_db)):
+async def index( ):
 
     return {"message": 'Hello World'}
 
+@app.get("/status/")
+async def status_all( ):
+    db: Dict = await get_db()
+    return {"message": db}
+
+
+
 @app.get("/check_account/{account_number}")
-async def exception(account_number):
+async def check_account(account_number):
 
     await check_account_exists(account_number)
+    account = await get_account(account_number)
+    return {"message": account}
 
-@app.get("/a")
+@app.post("/deposit", response_model=DepositResponse)
+async def deposit(request: DepositRequest, db: Dict = Depends(get_db)):
 
+    # Check if the account exists
+    account = next((acc for acc in db["accounts"] if acc["number"] == request.account), None)
+    if not account:
+        raise HTTPException(status_code=404, detail="Account does not exist")
 
+    # Update the balance
+    account["balance"] += request.amount
 
-
-@app.get("/deposit/{account}/{")
-async def deposit(account: str):
-    print(f'account: {account}')
-    return {"message": "Hello World"}
+    return DepositResponse(account=request.account, new_balance=account["balance"])
