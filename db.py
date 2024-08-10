@@ -1,27 +1,28 @@
 # db.py
 
 from typing import Dict, List, Any
-from fastapi.params import Depends
-from schemas import DepositRequest, DepositResponse
+from schemas import DepositRequest, Transaction
 
 
 global db
 db: Dict[str, List[Any]] = {}
 
-async def initialize_db() -> None:
+def initialize_db() -> None:
     global db  # Ensure you're modifying the global db variable
     db = {
         'users': [],
         'accounts': [],
         'transactions': []
     }
-    return await get_db()
+    return  get_db()
 
-async def get_db() -> Dict[str, List[Any]]:
+def get_db() -> Dict[str, List[Any]]:
     return db
 
-async def db_deposit(request: DepositRequest):
-    db = await get_db()
+
+
+def db_deposit(request: DepositRequest):
+    db =  get_db()
     # Check if the account exists
     account = next((acc for acc in db["accounts"] if acc["number"] == request.account), None)
     if not account:
@@ -31,3 +32,16 @@ async def db_deposit(request: DepositRequest):
     account["balance"] += request.amount
 
     return account
+
+
+def log_transaction(type: str, account: str, amount: float):
+    # Create a transaction
+    transaction = Transaction(
+        src_account=account,
+        type=type,
+        amount=amount
+    )
+
+    # Store the transaction in the database
+    db["transactions"].append(transaction.dict())
+    print(db)

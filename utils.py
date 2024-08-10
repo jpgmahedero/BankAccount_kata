@@ -4,7 +4,7 @@ from db import initialize_db,get_db
 
 
 
-async def populate_db(db):
+def populate_db(db):
 
     """
     Add some fake accounts empty, non-empty, IBAN compliant, and non-compliant.
@@ -48,14 +48,14 @@ async def populate_db(db):
 
     return db
 
-async def check_account_exists(account_number):
-    db = await get_db()
+def check_account_exists(account_number):
+    db = get_db()
     if not any([acc['number'] == account_number for acc in db['accounts']]):
         raise HTTPException(status_code=404, detail="Account does not exist")
 
 
-async def get_account(account_number: str):
-    db = await get_db()
+def get_account(account_number: str):
+    db = get_db()
     check_account_exists(account_number)
     # Search for the account in the database
     account = next((acc for acc in db["accounts"] if acc["number"] == account_number), None)
