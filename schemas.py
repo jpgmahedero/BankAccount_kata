@@ -11,6 +11,15 @@ class DepositResponse(BaseModel):
     account: str
     new_balance: float
 
+
+class WithdrawRequest(BaseModel):
+    account: str = Field(..., json_schema_extra={"example": "DE000000000000000000000"})
+    amount: float = Field(...,  json_schema_extra={"example": 50.0})
+
+class WithdrawResponse(BaseModel):
+    account: str
+    new_balance: float
+
 # Initialize a global counter for auto-incrementing the ID
 transaction_id_counter = count(1)
 

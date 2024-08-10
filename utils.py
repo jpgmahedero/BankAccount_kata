@@ -23,7 +23,7 @@ def populate_db(db):
     }
     account1_filled_IBAN_ok = {
         "user_id": "U1",
-        "balance": 100.05,
+        "balance": 150.0,
         "number": "DE00000000000000000150",
         "isIBAN": "true"
     }

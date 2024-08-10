@@ -1,9 +1,11 @@
 -- DOING
 DEPOSIT TRANSACTION
 
+
     - define pydantic schemas
     - tests
-        - test_desposit
+        - test_deposit with negative amounts
+        - test_withdraw
     - deposit:
         - params:
             - account

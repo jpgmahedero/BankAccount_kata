@@ -6,7 +6,7 @@ from main import  app
 from fastapi.testclient import TestClient
 from schemas import  Transaction
 from datetime import datetime
-from db import get_db
+from db import get_db,initialize_db
 
 
 def test_index( client):
@@ -26,9 +26,6 @@ def test_amount_deposit_is_positive( client):
     # 'DE000000000000000000000' is an existing account in your db with an initial balance of 0
     response = client.post("/deposit", json={"account": "DE000000000000000000000", "amount": -50.0})
 
-    print('oooooooooooooooooooooooooooo')
-    print(response.status_code)
-    print(response.json())
     assert response.status_code == 400
     assert response.json() == {"detail":"Invalid amount. Amount cannot be negative"}
 
@@ -44,17 +41,36 @@ def test_deposit_success(client):
     assert response.status_code == 200
     assert response.json() == {"account": "DE000000000000000000000", "new_balance": 72.0}
 
+def test_withdraw_invalid_amounts(client):
+    # Given: account with 0 balance
+    # 'DE000000000000000000000' is an existing account in  db with an initial balance of 0
+
+    # When: try to widthdraw
+    response = client.post("/withdraw", json={"account": "DE000000000000000000000", "amount": 1000.0})
+
+    # Then:
+    assert response.status_code == 400
+    assert response.json() == {"detail": "Invalid amount. Not enough balance available"}
+
+    # Given:  account with positive balance
+    # 'DE00000000000000000150' is an existing account in  db with an initial balance of 150
+
+    # When: try to widthdraw more amount than balance
+    response = client.post("/withdraw", json={"account": "DE00000000000000000150", "amount": 10000.0})
+
+    # Then:
+    assert response.status_code == 400
+    assert response.json() == {"detail": "Invalid amount. Not enough balance available"}
+
 
 def test_withdraw_success(client):
 
-    assert False
-    # 'DE000000000000000000000' is an existing account in your db with an initial balance of 0
-    client.post("/deposit", json={"account": "DE000000000000000000000", "amount": 50.0})
 
-    # 'DE000000000000000000000' has noww a balance of 50.0 let's add 22.0
-    response = client.post("/withdraw", json={"account": "DE000000000000000000000", "amount": 100.0})
+    # 'DE000000000000000000000' has now a balance of 150.0 let's withdraw150
+    response = client.post("/withdraw", json={"account": "DE00000000000000000150", "amount": 22.0})
     assert response.status_code == 200
-    assert response.json() == {"account": "DE000000000000000000000", "new_balance": 72.0}
+    assert response.json() == {"account": "DE00000000000000000150", "new_balance": 128.0}
+
 
 
 def test_transaction_creation():
@@ -74,6 +90,7 @@ def test_transaction_creation():
     assert isinstance(transaction.timestamp, datetime)
 
 def test_perform_deposit_creates_transaction(client):
+    #initialize_db()
     # Perform a deposit operation
     response = client.post("/deposit", json={"account": "DE000000000000000000000", "amount": 60.0})
 
