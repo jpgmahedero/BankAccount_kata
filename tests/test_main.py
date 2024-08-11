@@ -5,11 +5,6 @@ from datetime import datetime
 from schemas import Transaction
 
 
-def test_index( client):
-    response =  client.get("/")
-
-    assert response.status_code == 200
-    assert response.json() == {"detail": "Hello World"}
 
 
 def test_create_account(client):
@@ -31,7 +26,7 @@ def test_create_account(client):
     assert response.json() == {"account": account_number, "new_balance": 50.0}
 
 
-def test_check_account_is_new( client):
+def test_check_account_is_new(client):
     # Define the account number
     account_number = "EN000000000000000000100"
     # Step 1: Create the account by sending the account number in the request body
@@ -49,24 +44,24 @@ def test_check_account_is_new( client):
     assert response.json() == {"detail": "Account already exist"}
 
 
-def test_account_does_not_exists( client):
-
+def test_account_does_not_exists(client):
     response = client.get("/account_statement/ACCOUNT_DOES_NOT_EXISTS")
 
     assert response.status_code == 404
     assert response.json() == {"detail": "Account does not exist"}
 
-def test_amount_deposit_is_positive( client):
+
+def test_amount_deposit_is_positive(client):
     # 'DE000000000000000000000' is an existing account in  db with an initial balance of 0
     response = client.post("/deposit", json={"account": "DE000000000000000000000", "amount": -50.0})
 
     assert response.status_code == 400
-    assert response.json() == {"detail":"Invalid amount. Amount cannot be negative"}
+    assert response.json() == {"detail": "Invalid amount. Amount cannot be negative"}
+
 
 def test_deposit_success(client):
-
     # 'DE000000000000000000000' is an existing account in your db with an initial balance of 0
-    response =  client.post("/deposit", json={"account": "DE000000000000000000000", "amount": 50.0})
+    response = client.post("/deposit", json={"account": "DE000000000000000000000", "amount": 50.0})
     assert response.status_code == 200
     assert response.json() == {"account": "DE000000000000000000000", "new_balance": 50.0}
 
@@ -74,6 +69,7 @@ def test_deposit_success(client):
     response = client.post("/deposit", json={"account": "DE000000000000000000000", "amount": 22.0})
     assert response.status_code == 200
     assert response.json() == {"account": "DE000000000000000000000", "new_balance": 72.0}
+
 
 def test_withdraw_invalid_amounts(client):
     # Given: account with 0 balance
@@ -97,12 +93,10 @@ def test_withdraw_invalid_amounts(client):
     assert response.json() == {"detail": "Invalid amount. Not enough balance available"}
 
 
-
-
 def test_transfer_invalid_between_not_IBAN_accounts(client):
     # Example call to the transfer endpoint
     response = client.post("/transfer", json={
-        "src_account":  "DE00000000000000000150",
+        "src_account": "DE00000000000000000150",
         "dest_account": "NO_IBAN_Number_A4",
         "amount": 1.0
     })
@@ -113,11 +107,10 @@ def test_transfer_invalid_between_not_IBAN_accounts(client):
 def test_transfer_with_success(client):
     # Example call to the transfer endpoint
     response = client.post("/transfer", json={
-        "src_account":  "ES000000000000000000100",
+        "src_account": "ES000000000000000000100",
         "dest_account": "ES000000000000000000000",
         "amount": 75.0
     })
-
 
     assert response.status_code == 200
     assert response.json() == {
@@ -130,13 +123,10 @@ def test_transfer_with_success(client):
 
 
 def test_withdraw_success(client):
-
-
     # 'DE000000000000000000000' has now a balance of 150.0 let's withdraw150
     response = client.post("/withdraw", json={"account": "DE00000000000000000150", "amount": 22.0})
     assert response.status_code == 200
     assert response.json() == {"account": "DE00000000000000000150", "new_balance": 128.0}
-
 
 
 def test_transaction_creation():
@@ -153,16 +143,16 @@ def test_transaction_creation():
     assert transaction.amount == 66.6
     assert transaction.type == "deposit"
     assert isinstance(transaction.timestamp, datetime)
-    assert  transaction.balance == 123.45
+    assert transaction.balance == 123.45
+
 
 def test_perform_deposit_creates_transaction(client):
-    #initialize_db()
+    # initialize_db()
     # Perform a deposit operation
     response = client.post("/deposit", json={"account": "DE000000000000000000000", "amount": 60.0})
 
-
     # Verify that the transaction was recorded in the database
-    db  =   client.get("/status_all").json()['detail']
+    db = client.get("/status_all").json()['detail']
 
     transactions = db['transactions']
 
@@ -174,7 +164,5 @@ def test_perform_deposit_creates_transaction(client):
     assert transaction["type"] == "deposit"
 
 
-
 def test_get_all_transformations(client):
-
     response = client.get("/account_statment", params={"account_number": "DE000000000000000000000"})

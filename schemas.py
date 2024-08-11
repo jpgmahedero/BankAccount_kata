@@ -1,28 +1,35 @@
-from typing import Literal, Optional
 from datetime import datetime
-from pydantic import BaseModel, Field, field_validator
 from itertools import count
+from typing import Literal, Optional
+
+from pydantic import BaseModel, Field
+
 
 class DepositRequest(BaseModel):
     account: str = Field(..., json_schema_extra={"example": "DE000000000000000000000"})
     amount: float = Field(..., json_schema_extra={"example": 50.0})
 
+
 class DepositResponse(BaseModel):
     account: str
     new_balance: float
+
 
 class WithdrawRequest(BaseModel):
     account: str = Field(..., json_schema_extra={"example": "DE000000000000000000000"})
     amount: float = Field(..., json_schema_extra={"example": 50.0})
 
+
 class WithdrawResponse(BaseModel):
     account: str
     new_balance: float
+
 
 class TransferRequest(BaseModel):
     src_account: str = Field(..., json_schema_extra={"example": "DE000000000000000000000"})
     dest_account: str = Field(..., json_schema_extra={"example": "DE000000000000000000001"})
     amount: float = Field(..., json_schema_extra={"example": 50.0})
+
 
 class TransferResponse(BaseModel):
     src_account: str
@@ -41,11 +48,9 @@ class Transaction(BaseModel):
     balance: float = Field(..., example=500.0)  # Add a balance field
 
 
-
 class AccountCreateRequest(BaseModel):
     account_number: str
 
+
 # Initialize a global counter for auto-incrementing the ID
 transaction_id_counter = count(1)
-
-

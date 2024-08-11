@@ -1,18 +1,20 @@
 # main.py
 
-from fastapi import FastAPI, Query
 from contextlib import asynccontextmanager  # used for setup in lifespan
-
 from typing import Dict
-from db import log_transaction, initialize_db, get_db, db_deposit, db_withdraw, get_sorted_transactions,db_create_account
-from utils import populate_db, check_account_exists, get_account, check_amount_is_positive, \
+
+from fastapi import FastAPI, Query
+
+from db import log_transaction, initialize_db, get_db, db_deposit, db_withdraw, get_sorted_transactions, \
+    db_create_account
+from schemas import AccountCreateRequest
+from schemas import DepositRequest, DepositResponse
+from schemas import TransferRequest, TransferResponse
+from schemas import WithdrawRequest, WithdrawResponse
+from settings import PRODUCTION_MODE
+from utils import populate_db, check_account_exists, check_amount_is_positive, \
     check_account_is_IBAN_compliant, check_account_is_new
 
-from schemas import DepositRequest, DepositResponse
-from schemas import WithdrawRequest, WithdrawResponse
-from schemas import TransferRequest, TransferResponse
-from schemas import AccountCreateRequest
-from settings import PRODUCTION_MODE
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -32,9 +34,6 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 
-@app.get("/")
-async def index():
-    return {"detail": 'Hello World'}
 
 
 @app.get("/status_all/", include_in_schema=False)
@@ -47,9 +46,6 @@ async def status_all():
 async def status():
     db: Dict = get_db()
     return {"detail": db}
-
-
-
 
 
 @app.post("/create_account/")
@@ -120,6 +116,5 @@ async def account_statement(account_number: str, sort_order: str = Query("asc", 
     print(f'order {sort_order}')
     # Get sorted transactions for the specific account number
     transactions = get_sorted_transactions(account_number, sort_order)
-
 
     return {"detail": transactions}
