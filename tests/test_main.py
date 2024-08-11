@@ -157,3 +157,7 @@ def test_perform_deposit_creates_transaction(client):
     assert transaction["type"] == "deposit"
 
 
+
+def test_get_all_transformations(client):
+
+    response = client.get("/account_statment", params={"account_number": "DE000000000000000000000"})

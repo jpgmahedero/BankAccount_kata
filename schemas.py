@@ -30,8 +30,6 @@ class TransferResponse(BaseModel):
     src_new_balance: float
     dest_new_balance: float
 
-# Initialize a global counter for auto-incrementing the ID
-transaction_id_counter = count(1)
 
 class Transaction(BaseModel):
     id: int = Field(default_factory=lambda: next(transaction_id_counter), example=1)
@@ -40,10 +38,11 @@ class Transaction(BaseModel):
     amount: float = Field(..., example=100.0)
     dest_account: Optional[str] = Field(None, example="B1")  # Nullable, relevant only for transfers
     timestamp: datetime = Field(default_factory=datetime.utcnow, example="2024-01-01T12:00:00Z")
+    balance: float = Field(..., example=500.0)  # Add a balance field
 
-    @field_validator('dest_account', mode='before')
-    def validate_dest_account(cls, v, values):
-        if values.get('type') == 'transfer' and not v:
-            raise ValueError('dest_account must be provided for transfer transactions')
-        return v
+
+
+# Initialize a global counter for auto-incrementing the ID
+transaction_id_counter = count(1)
+
 
