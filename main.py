@@ -42,10 +42,7 @@ async def status_all():
     return {"detail": db}
 
 
-@app.get("/status", include_in_schema=False)
-async def status():
-    db: Dict = get_db()
-    return {"detail": db}
+
 
 
 @app.post("/create_account/")
