@@ -98,29 +98,8 @@ def test_withdraw_invalid_amounts(client):
 
 
 
+
 def test_transfer_invalid_between_not_IBAN_accounts(client):
-    # Given: account with 0 balance
-    # 'DE000000000000000000000' is an existing account in  db with an initial balance of 0
-
-    # When: try to widthdraw
-    response = client.post("/withdraw", json={"account": "DE000000000000000000000", "amount": 1000.0})
-
-    # Then:
-    assert response.status_code == 400
-    assert response.json() == {"detail": "Invalid amount. Not enough balance available"}
-
-    # Given:  account with positive balance
-    # 'DE00000000000000000150' is an existing account in  db with an initial balance of 150
-
-    # When: try to widthdraw more amount than balance
-    response = client.post("/withdraw", json={"account": "DE00000000000000000150", "amount": 10000.0})
-
-    # Then:
-    assert response.status_code == 400
-    assert response.json() == {"detail": "Invalid amount. Not enough balance available"}
-
-
-def test_transfer_with_non_IBAN_accounts(client):
     # Example call to the transfer endpoint
     response = client.post("/transfer", json={
         "src_account":  "DE00000000000000000150",

@@ -1,6 +1,6 @@
 # db.py
 
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Optional
 from schemas import DepositRequest, WithdrawRequest, Transaction
 from fastapi import  HTTPException
 from datetime import datetime
@@ -27,12 +27,14 @@ def get_db() -> Dict[str, List[Any]]:
 
 def db_create_account(account_number):
     db = get_db()
-    isIBAN = is_IBAN(account_number)
+    isIBAN = 'true'
+    if not is_IBAN(account_number):
+        isIBAN = 'false'
     account =  {
         "user_id": "U1",
         "balance": 0,
         "number": account_number,
-        "isIBAN": is_IBAN(account_number)
+        "isIBAN": isIBAN
     }
     db['accounts'].append(account)
 def db_deposit(request: DepositRequest):
@@ -65,10 +67,10 @@ def db_withdraw(request: WithdrawRequest):
     return account
 
 
-def log_transaction(type: str, account_number: str, amount: float, balance:float):
-    # Create a transaction
+def log_transaction(type: str, account_number: str, amount: float, balance: float, dest_account: Optional[str] = None):    # Create a transaction
     transaction = Transaction(
         src_account=account_number,
+        dest_account=dest_account,
         type=type,
         amount=amount,
         balance=balance

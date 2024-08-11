@@ -62,7 +62,7 @@ def populate_db(db):
     account8_filled_IBAN_ok = {
         "user_id": "U1",
         "balance": 100.0,
-        "number": "FR000000000000000000100",
+        "number": "ES9121000418450200051332",
         "isIBAN": "true"
     }
 
@@ -111,6 +111,7 @@ def check_account_is_IBAN_compliant(account_number):
         raise HTTPException(status_code=404, detail=f"Account {account_number} does not exist")
 
     account = get_account(account_number)
+    print(f'--- account {account}')
     if account['isIBAN'] != 'true':
         raise HTTPException(status_code=400, detail= f"Transfer between non IBAN accounts is not permitted")
 
