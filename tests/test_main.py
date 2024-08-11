@@ -149,16 +149,19 @@ def test_transaction_creation():
 def test_perform_deposit_creates_transaction(client):
     # initialize_db()
     # Perform a deposit operation
-    response = client.post("/deposit", json={"account": "DE000000000000000000000", "amount": 60.0})
+    account_number = "DE000000000000000000000"
+    response = client.post("/deposit", json={"account": f"{account_number}", "amount": 60.0})
 
     # Verify that the transaction was recorded in the database
-    db = client.get("/status_all").json()['detail']
+   # db = client.get("/status_all").json()['detail']
 
-    transactions = db['transactions']
 
-    assert len(transactions) > 0
-    transaction = transactions[-1]  # Get the last transaction
+    response = client.get(f"/account_statement/{account_number}")
+    transactions = response.json()
 
+    transaction = transactions['detail'][-1]
+
+    assert response.status_code == 200
     assert transaction["src_account"] == "DE000000000000000000000"
     assert transaction["amount"] == 60.0
     assert transaction["type"] == "deposit"

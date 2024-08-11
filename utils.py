@@ -110,6 +110,5 @@ def check_account_is_IBAN_compliant(account_number):
         raise HTTPException(status_code=404, detail=f"Account {account_number} does not exist")
 
     account = get_account(account_number)
-    print(f'--- account {account}')
     if account['isIBAN'] != 'true':
         raise HTTPException(status_code=400, detail=f"Transfer between non IBAN accounts is not permitted")

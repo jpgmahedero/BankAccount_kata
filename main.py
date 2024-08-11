@@ -36,12 +36,6 @@ app = FastAPI(lifespan=lifespan)
 
 
 
-@app.get("/status_all/", include_in_schema=False)
-async def status_all():
-    db: Dict = get_db()
-    return {"detail": db}
-
-
 
 
 
@@ -110,7 +104,6 @@ async def account_statement(account_number: str, sort_order: str = Query("asc", 
     """
     check_account_exists(account_number)
 
-    print(f'order {sort_order}')
     # Get sorted transactions for the specific account number
     transactions = get_sorted_transactions(account_number, sort_order)
 
