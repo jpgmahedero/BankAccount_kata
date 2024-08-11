@@ -49,6 +49,12 @@ pytest tests  -s
 ```
 You can pass additional arguments to `pytest` for more detailed output, HTML reports, etc.
 
+### API documentation
+There's a swagger API docs for the
+```
+http://localhots:8000/docs
+``
+
 ## Simplifications and improvements
 - Currently, an in-memory database is used. Consider switching to SQLite or another RDBMS for persistence.
 - Convert functions in utils.py into decorators where appropriate.
