@@ -1,6 +1,6 @@
 # main.py
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Query
 from contextlib import asynccontextmanager  # used for setup in lifespan
 
 from typing import Dict
@@ -101,12 +101,18 @@ async def transfer(request: TransferRequest):
     )
 
 
-@app.get("/account_statment/{account_number}")
-async def get_transactions(account_number: str):
-    # Example data, in a real application this would be fetched from a database
-    transactions = get_sorted_transactions(account_number)
+@app.get("/account_statement/{account_number}")
+async def account_statement(account_number: str, sort_order: str = Query("asc", patter="^(asc|desc)$")):
+    """
+    Get the account statement for a specific account number, sorted by date.
 
-    # formatted_transactions = format_transactions(transactions)
-    print(transactions)
+    Parameters:
+    - account_number: The account number to fetch transactions for.
+    - sort_order: The order to sort the transactions by date. Either 'asc' for ascending or 'desc' for descending.
+    """
+    print(f'order {sort_order}')
+    # Get sorted transactions for the specific account number
+    transactions = get_sorted_transactions(account_number, sort_order)
+
 
     return {"message": transactions}

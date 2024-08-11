@@ -64,23 +64,22 @@ def log_transaction(type: str, account: str, amount: float, balance:float):
     db["transactions"].append(transaction.dict())
 
 
-def get_sorted_transactions(account_number: str) -> List[str]:
+def get_sorted_transactions(account_number: str, sort_order: str) -> List[Dict]:
     db = get_db()
     transactions = db.get('transactions', [])
 
-    # Filter transactions for the  account
-    filtered_transactions = [transaction for transaction in transactions if transaction['src_account'] == account_number ]
+    # Filter transactions for the specified account number
+    filtered_transactions = [
+        transaction for transaction in transactions
+        if transaction['src_account'] == account_number or transaction.get('dest_account') == account_number
+    ]
 
-    # Sort the filtered transactions by timestamp
-    sorted_transactions = sorted(filtered_transactions,
-                                 key=lambda transaction: datetime.fromisoformat(str(transaction['timestamp'])))
+    # Sort the filtered transactions by timestamp in the specified order
+    reverse_order = sort_order == "desc"
+    sorted_transactions = sorted(
+        filtered_transactions,
+        key=lambda transaction: datetime.fromisoformat(str(transaction['timestamp'])),
+        reverse=reverse_order
+    )
 
-    # Format each transaction into the desired string format
-    formatted_transactions = []
-    for transaction in sorted_transactions:
-        date_str = datetime.fromisoformat(str(transaction['timestamp'])).strftime(
-            "%d.%m.%Y")  # Format date as DD.MM.YYYY
-        amount_str = f"+{transaction['amount']}" if transaction['type']=='deposit'  else f"-{abs(transaction['amount'])}"
-        balance_str = f"{transaction['balance']}"  # Get the balance for the transaction
-        formatted_transactions.append(f"{date_str} {amount_str} {balance_str}")
-    return formatted_transactions
+    return sorted_transactions
