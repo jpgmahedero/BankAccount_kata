@@ -9,11 +9,49 @@ def test_index( client):
     response =  client.get("/")
 
     assert response.status_code == 200
-    assert response.json() == {"message": "Hello World"}
+    assert response.json() == {"detail": "Hello World"}
+
+
+def test_create_account(client):
+    # Define the account number
+    account_number = "EN000000000000000000000"
+
+    # Step 1: Create the account by sending the account number in the request body
+    response = client.post("/create_account/", json={"account_number": account_number})
+
+    # Assert that the account creation was successful
+    assert response.status_code == 200
+    assert response.json() == {"detail": "Account created"}
+
+    # Step 2: Deposit into the newly created account
+    response = client.post("/deposit", json={"account": account_number, "amount": 50.0})
+
+    # Assert that the deposit was successful and the balance is updated
+    assert response.status_code == 200
+    assert response.json() == {"account": account_number, "new_balance": 50.0}
+
+
+def test_check_account_is_new( client):
+    # Define the account number
+    account_number = "EN000000000000000000100"
+    # Step 1: Create the account by sending the account number in the request body
+    response = client.post("/create_account/", json={"account_number": account_number})
+
+    # Assert that the account creation was successful
+    assert response.status_code == 200
+    assert response.json() == {"detail": "Account created"}
+
+    # Step 2: Recreate the  SAME account
+    response = client.post("/create_account/", json={"account_number": account_number})
+
+    # Assert that the account creation was successful
+    assert response.status_code == 400
+    assert response.json() == {"detail": "Account already exist"}
 
 
 def test_account_does_not_exists( client):
-    response = client.get("/check_account/ACCOUNT_DOES_NOT_EXISTS")
+
+    response = client.get("/account_statement/ACCOUNT_DOES_NOT_EXISTS")
 
     assert response.status_code == 404
     assert response.json() == {"detail": "Account does not exist"}
@@ -124,19 +162,19 @@ def test_withdraw_success(client):
 
 def test_transaction_creation():
     transaction = Transaction(
-        id=27,
         src_account="DE000000000000000000000",
         amount=66.6,
         type="deposit",
         timestamp=datetime.utcnow(),
+        balance=123.45
     )
 
-    assert transaction.id == 27
     assert transaction.src_account == "DE000000000000000000000"
-    assert transaction.dest_account == None
+    assert transaction.dest_account is None
     assert transaction.amount == 66.6
     assert transaction.type == "deposit"
     assert isinstance(transaction.timestamp, datetime)
+    assert  transaction.balance == 123.45
 
 def test_perform_deposit_creates_transaction(client):
     #initialize_db()
@@ -145,7 +183,7 @@ def test_perform_deposit_creates_transaction(client):
 
 
     # Verify that the transaction was recorded in the database
-    db  =   client.get("/status_all").json()['message']
+    db  =   client.get("/status_all").json()['detail']
 
     transactions = db['transactions']
 

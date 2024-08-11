@@ -4,13 +4,14 @@ from fastapi import FastAPI, Query
 from contextlib import asynccontextmanager  # used for setup in lifespan
 
 from typing import Dict
-from db import log_transaction, initialize_db, get_db, db_deposit, db_withdraw, get_sorted_transactions
+from db import log_transaction, initialize_db, get_db, db_deposit, db_withdraw, get_sorted_transactions,db_create_account
 from utils import populate_db, check_account_exists, get_account, check_amount_is_positive, \
-    check_account_is_IBAN_compliant
+    check_account_is_IBAN_compliant, check_account_is_new
 
 from schemas import DepositRequest, DepositResponse
 from schemas import WithdrawRequest, WithdrawResponse
 from schemas import TransferRequest, TransferResponse
+from schemas import AccountCreateRequest
 from settings import PRODUCTION_MODE
 
 @asynccontextmanager
@@ -33,26 +34,30 @@ app = FastAPI(lifespan=lifespan)
 
 @app.get("/")
 async def index():
-    return {"message": 'Hello World'}
+    return {"detail": 'Hello World'}
 
 
 @app.get("/status_all/", include_in_schema=False)
 async def status_all():
     db: Dict = get_db()
-    return {"message": db}
+    return {"detail": db}
 
 
 @app.get("/status", include_in_schema=False)
 async def status():
     db: Dict = get_db()
-    return {"message": db}
+    return {"detail": db}
 
 
-@app.get("/check_account/{account_number}")
-async def check_account(account_number):
-    check_account_exists(account_number)
-    account = get_account(account_number)
-    return {"message": account}
+
+
+
+@app.post("/create_account/")
+async def create_account(request: AccountCreateRequest):
+    account_number = request.account_number
+    check_account_is_new(account_number)
+    db_create_account(account_number)
+    return {"detail": "Account created"}
 
 
 @app.post("/deposit", response_model=DepositResponse)
@@ -62,7 +67,7 @@ async def deposit(request: DepositRequest):
 
     # call the db
     account = db_deposit(request)
-    log_transaction(type='deposit', account=request.account, amount=request.amount, balance=account["balance"])
+    log_transaction(type='deposit', account_number=request.account, amount=request.amount, balance=account["balance"])
 
     return DepositResponse(account=request.account, new_balance=account["balance"])
 
@@ -74,14 +79,14 @@ async def withdraw(request: WithdrawRequest):
 
     # call the db
     account = db_withdraw(request)
-    log_transaction(type='withdraw', account=request.account, amount=request.amount, balance=account["balance"])
+    log_transaction(type='withdraw', account_number=request.account, amount=request.amount, balance=account["balance"])
 
     return WithdrawResponse(account=request.account, new_balance=account["balance"])
 
 
 @app.post("/transfer", response_model=TransferResponse)
 async def transfer(request: TransferRequest):
-    # will check
+    # only allow transfers to IBAN compliant destination accounts
     check_account_is_IBAN_compliant(request.dest_account)
 
     # First, perform the withdrawal from the source account
@@ -110,9 +115,11 @@ async def account_statement(account_number: str, sort_order: str = Query("asc", 
     - account_number: The account number to fetch transactions for.
     - sort_order: The order to sort the transactions by date. Either 'asc' for ascending or 'desc' for descending.
     """
+    check_account_exists(account_number)
+
     print(f'order {sort_order}')
     # Get sorted transactions for the specific account number
     transactions = get_sorted_transactions(account_number, sort_order)
 
 
-    return {"message": transactions}
+    return {"detail": transactions}

@@ -42,6 +42,9 @@ class Transaction(BaseModel):
 
 
 
+class AccountCreateRequest(BaseModel):
+    account_number: str
+
 # Initialize a global counter for auto-incrementing the ID
 transaction_id_counter = count(1)
 
