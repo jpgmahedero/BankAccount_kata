@@ -10,7 +10,7 @@ db: Dict[str, List[Any]] = {}
 def initialize_db() -> None:
     global db  # Ensure you're modifying the global db variable
     db = {
-        'users': [],
+
         'accounts': [],
         'transactions': []
     }

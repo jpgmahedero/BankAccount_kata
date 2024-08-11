@@ -11,11 +11,7 @@ def populate_db(db):
     """
     Add some fake accounts empty, non-empty, IBAN compliant, and non-compliant.
     """
-    user1 = {"id": "U1", "name": "N1"}
-    user2 = {"id": "U2", "name": "N2"}
 
-    db["users"].append(user1)
-    db["users"].append(user2)
 
     account1_empty_IBAN_ok = {
         "user_id": "U1",

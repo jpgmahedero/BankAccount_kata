@@ -11,8 +11,7 @@ from utils import populate_db, check_account_exists, get_account, check_amount_i
 from schemas import DepositRequest, DepositResponse
 from schemas import WithdrawRequest, WithdrawResponse
 from schemas import TransferRequest, TransferResponse
-from schemas import Transaction
-
+from settings import PRODUCTION_MODE
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -20,7 +19,8 @@ async def lifespan(app: FastAPI):
     initialize_db()  # Initialize the db structure
 
     db = get_db()
-    populate_db(db)  # Populate the db with data
+    if not PRODUCTION_MODE:
+        populate_db(db)  # Populate the db with data
     print('Database after population:', db)
 
     yield  # This runs the application
