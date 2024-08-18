@@ -1,10 +1,13 @@
 # db.py
 
-from typing import Dict, List, Any, Optional
-from schemas import DepositRequest, WithdrawRequest, Transaction
-from fastapi import HTTPException
-from datetime import datetime
 import string
+from datetime import datetime
+from typing import Dict, List, Any, Optional
+
+from fastapi import HTTPException
+
+from schemas import DepositRequest, WithdrawRequest, Transaction, AccountCreateRequest, TransferRequest, \
+    TransferResponse
 
 global db
 
@@ -25,8 +28,9 @@ def get_db() -> Dict[str, List[Any]]:
     return db
 
 
-def db_create_account(account_number):
+def db_create_account(request: AccountCreateRequest):
     db = get_db()
+    account_number = request.account
     isIBAN = 'true'
     if not is_IBAN(account_number):
         isIBAN = 'false'
@@ -39,12 +43,33 @@ def db_create_account(account_number):
     db['accounts'].append(account)
 
 
+def db_transfer(request: TransferRequest):
+    db = get_db()
+    # Check if the account exists
+    src_account = next((acc for acc in db["accounts"] if acc["number"] == request.src_account), None)
+    if not src_account:
+        raise HTTPException(status_code=404, detail=f"Src Account {src_account} does not exist")
+
+    dest_account = next((acc for acc in db["accounts"] if acc["number"] == request.dest_account), None)
+    if not dest_account:
+        raise HTTPException(status_code=404, detail=f"Dest Account {dest_account} does not exist")
+
+    # Only update balances if EVERYTHIGN was OK
+    src_account["balance"] -= request.amount
+    dest_account["balance"] += request.amount
+    return TransferResponse(
+        src_account=src_account['number'],
+        dest_account=dest_account['number'],
+        src_new_balance=src_account["balance"],
+        dest_new_balance=dest_account["balance"])
+
+
 def db_deposit(request: DepositRequest):
     db = get_db()
     # Check if the account exists
     account = next((acc for acc in db["accounts"] if acc["number"] == request.account), None)
     if not account:
-        raise HTTPException(status_code=404, detail="Account does not exist")
+        raise HTTPException(status_code=404, detail=f"Account {request.account} does not exist")
 
     # Update the balance
     account["balance"] += request.amount
@@ -57,7 +82,7 @@ def db_withdraw(request: WithdrawRequest):
     # Check if the account exists
     account = next((acc for acc in db["accounts"] if acc["number"] == request.account), None)
     if not account:
-        raise HTTPException(status_code=404, detail="Account does not exist")
+        raise HTTPException(status_code=404, detail=f"Account {request.account} does not exist")
 
     # operartion not permitted
     if account["balance"] - request.amount < 0:

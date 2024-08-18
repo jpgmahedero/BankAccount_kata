@@ -5,14 +5,12 @@ from datetime import datetime
 from schemas import Transaction
 
 
-
-
 def test_create_account(client):
     # Define the account number
-    account_number = "EN000000000000000000000"
+    account_number = "EN00000000000000000000A"
 
     # Step 1: Create the account by sending the account number in the request body
-    response = client.post("/create_account/", json={"account_number": account_number})
+    response = client.post("/create_account/", json={"account": account_number})
 
     # Assert that the account creation was successful
     assert response.status_code == 200
@@ -30,14 +28,14 @@ def test_check_account_is_new(client):
     # Define the account number
     account_number = "EN000000000000000000100"
     # Step 1: Create the account by sending the account number in the request body
-    response = client.post("/create_account/", json={"account_number": account_number})
+    response = client.post("/create_account/", json={"account": account_number})
 
     # Assert that the account creation was successful
     assert response.status_code == 200
     assert response.json() == {"detail": "Account created"}
 
     # Step 2: Recreate the  SAME account
-    response = client.post("/create_account/", json={"account_number": account_number})
+    response = client.post("/create_account/", json={"account": account_number})
 
     # Assert that the account creation was successful
     assert response.status_code == 400
@@ -45,10 +43,11 @@ def test_check_account_is_new(client):
 
 
 def test_account_does_not_exists(client):
-    response = client.get("/account_statement/ACCOUNT_DOES_NOT_EXISTS")
+    account = 'ACCOUNT_DOES_NOT_EXISTS'
+    response = client.get(f"/account_statement/{account}")
 
     assert response.status_code == 404
-    assert response.json() == {"detail": "Account does not exist"}
+    assert response.json() == {"detail": f"Account {account} does not exist"}
 
 
 def test_amount_deposit_is_positive(client):
@@ -95,9 +94,11 @@ def test_withdraw_invalid_amounts(client):
 
 def test_transfer_invalid_between_not_IBAN_accounts(client):
     # Example call to the transfer endpoint
+
+    # FR000000000000000000100 account which i sset a non IBAN
     response = client.post("/transfer", json={
         "src_account": "DE00000000000000000150",
-        "dest_account": "NO_IBAN_Number_A4",
+        "dest_account": "FR000000000000000000100",
         "amount": 1.0
     })
     assert response.json() == {"detail": "Transfer between non IBAN accounts is not permitted"}
@@ -123,7 +124,8 @@ def test_transfer_with_success(client):
 
 
 def test_withdraw_success(client):
-    # 'DE000000000000000000000' has now a balance of 150.0 let's withdraw150
+    # 'DE000000000000000000000' has now a balance of 150.0
+    #  Let's withdraw 150
     response = client.post("/withdraw", json={"account": "DE00000000000000000150", "amount": 22.0})
     assert response.status_code == 200
     assert response.json() == {"account": "DE00000000000000000150", "new_balance": 128.0}
@@ -153,8 +155,7 @@ def test_perform_deposit_creates_transaction(client):
     response = client.post("/deposit", json={"account": f"{account_number}", "amount": 60.0})
 
     # Verify that the transaction was recorded in the database
-   # db = client.get("/status_all").json()['detail']
-
+    # db = client.get("/status_all").json()['detail']
 
     response = client.get(f"/account_statement/{account_number}")
     transactions = response.json()

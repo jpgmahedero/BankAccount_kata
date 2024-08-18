@@ -5,27 +5,31 @@ from typing import Literal, Optional
 from pydantic import BaseModel, Field
 
 
-class DepositRequest(BaseModel):
+class BankModel(BaseModel):
     account: str = Field(..., json_schema_extra={"example": "DE000000000000000000000"})
+
+
+class DepositRequest(BankModel):
     amount: float = Field(..., json_schema_extra={"example": 50.0})
 
 
-class DepositResponse(BaseModel):
-    account: str
+class DepositResponse(BankModel):
+    #account: str
     new_balance: float
 
 
-class WithdrawRequest(BaseModel):
-    account: str = Field(..., json_schema_extra={"example": "DE000000000000000000000"})
+class WithdrawRequest(BankModel):
+    #account: str = Field(..., json_schema_extra={"example": "DE000000000000000000000"})
     amount: float = Field(..., json_schema_extra={"example": 50.0})
 
 
-class WithdrawResponse(BaseModel):
-    account: str
+class WithdrawResponse(BankModel):
+    #account: str
     new_balance: float
 
 
-class TransferRequest(BaseModel):
+class TransferRequest(BankModel):
+    account :str =  ''
     src_account: str = Field(..., json_schema_extra={"example": "DE000000000000000000000"})
     dest_account: str = Field(..., json_schema_extra={"example": "DE000000000000000000001"})
     amount: float = Field(..., json_schema_extra={"example": 50.0})
@@ -48,8 +52,8 @@ class Transaction(BaseModel):
     balance: float = Field(..., example=500.0)  # Add a balance field
 
 
-class AccountCreateRequest(BaseModel):
-    account_number: str
+class AccountCreateRequest(BankModel):
+    pass
 
 
 # Initialize a global counter for auto-incrementing the ID

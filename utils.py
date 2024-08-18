@@ -3,8 +3,9 @@ from typing import List
 from fastapi import HTTPException
 from typing import Dict
 from db import initialize_db, get_db
-
+from schemas import AccountCreateRequest
 from schemas import Transaction
+import  functools
 
 
 def populate_db(db):
@@ -55,7 +56,7 @@ def populate_db(db):
         "user_id": "U1",
         "balance": 100.0,
         "number": "FR000000000000000000100",
-        "isIBAN": "true"
+        "isIBAN": "false"
     }
 
     account8_filled_IBAN_ok = {
@@ -77,15 +78,31 @@ def populate_db(db):
     return db
 
 
-def check_account_exists(account_number):
+def check_account_exists(account: str):
+    """
+    Used to avoid dealing with NON existing accounts
+    :param request:
+    :return:
+    :exception: when account DOES NOT exist
+    """
     db = get_db()
-    if not any([acc['number'] == account_number for acc in db['accounts']]):
-        raise HTTPException(status_code=404, detail=f"Account does not exist")
 
 
-def check_account_is_new(account_number):
+    if  not any([acc['number'] == account for acc in db['accounts']]):
+        raise HTTPException(status_code=404, detail=f"Account {account} does not exist")
+
+
+
+def check_account_is_new(account: str):
+    """
+       Used to avoid re-creatign already existing
+       :param account_number:
+       :return:
+       :exception: when account DOES exist
+       """
     db = get_db()
-    if any([acc['number'] == account_number for acc in db['accounts']]):
+
+    if any([acc['number'] == account for acc in db['accounts']]):
         raise HTTPException(status_code=400, detail=f"Account already exist")
 
 
@@ -105,6 +122,7 @@ def get_account(account_number: str):
 
 
 def check_account_is_IBAN_compliant(account_number):
+
     db = get_db()
     if not any([acc['number'] == account_number for acc in db['accounts']]):
         raise HTTPException(status_code=404, detail=f"Account {account_number} does not exist")
@@ -112,3 +130,6 @@ def check_account_is_IBAN_compliant(account_number):
     account = get_account(account_number)
     if account['isIBAN'] != 'true':
         raise HTTPException(status_code=400, detail=f"Transfer between non IBAN accounts is not permitted")
+
+# Custom decorator
+
